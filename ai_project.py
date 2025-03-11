@@ -100,3 +100,62 @@ def synonym_replacement(sentence, n=1):
     df["synonym_replacement"] = df["Resume_str"].apply(lambda x: synonym_replacement(x))
 df.to_csv("augmented_resume_dataset.csv", index=False)
 print(df.head())
+"""# **Vectorization**"""
+!pip install gensim
+from gensim.models import Word2Vec
+
+word2vec_model = Word2Vec(sentences=df["synonym_replacement"], vector_size=100, window=5, min_count=1, workers=4)
+
+def get_word2vec_vector(tokens):
+    vectors = [word2vec_model.wv[word] for word in tokens if word in word2vec_model.wv]
+    return sum(vectors) / len(vectors) if vectors else [0] * 100  
+
+df["word2vec_vector"] = df["synonym_replacement"].apply(get_word2vec_vector)
+print(df.head())
+from sklearn.feature_extraction.text import TfidfVectorizer
+
+df["processed_text_tf-idf"] = df["synonym_replacement"].apply(lambda x: " ".join(x))
+
+tfidf_vectorizer = TfidfVectorizer(max_features=5000)
+tfidf_vectors = tfidf_vectorizer.fit_transform(df["synonym_replacement"])
+
+tfidf_df = pd.DataFrame(tfidf_vectors.toarray(), columns=tfidf_vectorizer.get_feature_names_out())
+
+df = pd.concat([df, tfidf_df], axis=1)
+print(df.head())
+df.to_csv("vectorized_resume_dataset.csv", index=False)
+
+"""# **Pretesting with KNN**"""
+
+from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import LabelEncoder
+from sklearn.impute import SimpleImputer 
+import pandas as pd
+
+X = df.drop(columns=['Category', 'word2vec_vector']) 
+y = df['Category']  
+scaler = StandardScaler() 
+encoder = LabelEncoder()
+y = encoder.fit_transform(y) 
+for column in X.select_dtypes(include=['object']).columns:
+    X[column] = encoder.fit_transform(X[column])
+    
+imputer = SimpleImputer(strategy='mean') 
+X = imputer.fit_transform(X) 
+X_scaled = scaler.fit_transform(X)
+
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, classification_report
+
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+
+knn = KNeighborsClassifier(n_neighbors=5, metric='cosine')  
+
+knn.fit(X_train, y_train)
+
+y_pred = knn.predict(X_test)
+
+accuracy = accuracy_score(y_test, y_pred)
+print(f"KNN Accuracy: {accuracy:.4f}")
+print("Classification Report:\n", classification_report(y_test, y_pred))
