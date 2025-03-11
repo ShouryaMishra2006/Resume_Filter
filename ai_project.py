@@ -75,3 +75,28 @@ df.drop_duplicates(subset=["Resume_str"], inplace=True)
 df.to_csv("cleaned_resume_dataset.csv", index=False)
 
 print(df.head())
+"""# **Dataset Augmented**"""
+import random
+import nltk
+import pandas as pd
+from nltk.corpus import wordnet
+from gensim.models import Word2Vec
+from transformers import pipeline
+
+nltk.download('wordnet')
+nltk.download('omw-1.4') paraphrase = pipeline("text2text-generation", model="humarin/chatgpt_paraphraser_on_T5_base")
+def synonym_replacement(sentence, n=1):
+    words = sentence.split()
+    if not words:  
+        return sentence
+    new_words = words.copy()
+    for _ in range(n):
+        word = random.choice(words)
+        synonyms = wordnet.synsets(word)
+        if synonyms:
+            synonym = synonyms[0].lemmas()[0].name()
+            new_words[new_words.index(word)] = synonym
+    return ' '.join(new_words)
+    df["synonym_replacement"] = df["Resume_str"].apply(lambda x: synonym_replacement(x))
+df.to_csv("augmented_resume_dataset.csv", index=False)
+print(df.head())
