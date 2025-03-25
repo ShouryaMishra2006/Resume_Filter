@@ -106,13 +106,12 @@ df["synonym_replacement"] = df["Resume_str"].apply(lambda x: synonym_replacement
 df.to_csv("augmented_resume_dataset.csv", index=False)
 print(df.head())
 
-"""# **Vectorization**"""
+"""# ** Data Vectorization **"""
 
 !pip install gensim
 
 !pip install --upgrade numpy
 
-!pip install  gensim
 !pip install numpy
 
 !pip uninstall gensim -y
