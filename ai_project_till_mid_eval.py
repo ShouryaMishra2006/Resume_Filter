@@ -382,7 +382,7 @@ print(f"Predicted Category: {predicted_class}")
 original_category = label_encoder.inverse_transform([predicted_class])[0]
 
 print(f"Predicted Category (decoded): {original_category}
-chartant_accountant = "Highly Experienced in Business and sales , Lead more than 2 companies "
+sample_text = "Chartant Accountant "
 
 inputs = tokenizer(sample_text, padding=True, truncation=True, return_tensors="pt", max_length=512)
 
