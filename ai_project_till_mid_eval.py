@@ -381,4 +381,17 @@ predicted_class = torch.argmax(outputs.logits, dim=1).item()
 print(f"Predicted Category: {predicted_class}")
 original_category = label_encoder.inverse_transform([predicted_class])[0]
 
-print(f"Predicted Category (decoded): {original_category}")
+print(f"Predicted Category (decoded): {original_category}
+chartant_accountant = "Highly Experienced in Business and sales , Lead more than 2 companies "
+
+inputs = tokenizer(sample_text, padding=True, truncation=True, return_tensors="pt", max_length=512)
+
+inputs = {key: val.to(device) for key, val in inputs.items()}
+with torch.no_grad():
+    outputs = model(**inputs)
+predicted_class = torch.argmax(outputs.logits, dim=1).item()
+
+print(f"Predicted Category: {predicted_class}")
+original_category = label_encoder.inverse_transform([predicted_class])[0]
+
+print(f"Predicted Category (decoded): {original_category}
